@@ -1,0 +1,31 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Application.index
+
+# Transports
+
+GET 	/transports					controllers.Transports.all
+GET 	/transports/:id				controllers.Transports.one(id : Long)
+GET 	/transports/:id/lines		controllers.Transports.linesForTransportWithId(id : Long)
+
+# Stations
+
+GET		/stations					controllers.Stations.all
+GET 	/stations/:id				controllers.Stations.one(id : Long)
+
+# Lines
+
+GET 	/lines						controllers.Lines.all
+GET 	/lines/:id					controllers.Lines.one(id : Long)
+GET 	/lines/:id/vehicles			controllers.Vehicles.allFromLineWithId(id : Long)
+
+# Vehicles
+
+GET 	/vehicles					controllers.Vehicles.all
+GET 	/vehicles/:id				controllers.Vehicles.one(id : Long)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)

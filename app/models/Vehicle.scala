@@ -1,0 +1,39 @@
+package models
+
+import play.api.db._
+import play.api.Play.current
+import anorm._
+import anorm.SqlParser._
+
+case class Vehicle(id : Long, identifier : Long, line_id : Long)
+
+object Vehicle {
+  
+  def findAll() : Seq[Vehicle] = {
+    DB.withConnection { implicit connection =>
+      SQL(Vehicle.query).as(Vehicle.tuple *)
+    }
+  }
+  
+  def find(id : Long) : Vehicle = {
+    DB.withConnection { implicit connection =>
+      SQL(Vehicle.query+" WHERE id = {vehicle_id}").on("vehicle_id" -> id).as(Vehicle.tuple.single)
+    }
+  }
+  
+  def findAllFromLine(id : Long) : Seq[Vehicle] = {
+    DB.withConnection { implicit connection =>
+      SQL(Vehicle.query+" WHERE line_id = {line_id}").on("line_id" -> id).as(Vehicle.tuple *)
+    }
+  }
+  
+  val query = "SELECT id, identifier, line_id FROM vehicles"
+  val tuple = {
+    get[Long]("id") ~
+    get[Long]("identifier")~
+    get[Long]("line_id") map {
+      case id~identifier~lineId => 
+        Vehicle(id, identifier, lineId)
+    }
+  }
+}
