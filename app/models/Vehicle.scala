@@ -21,6 +21,18 @@ object Vehicle {
     }
   }
   
+  def findByIdentifier(identifier : Long) : Vehicle = {
+    DB.withConnection { implicit connection =>
+      val vehicle : Seq[Vehicle] = SQL(Vehicle.query+" WHERE identifier = {identifier}").on("identifier" -> identifier).as(Vehicle.tuple *)
+      if(vehicle.size > 0) {
+    	return vehicle.head
+      } else {
+        return null
+      }
+    	    
+    }
+  }
+  
   def findAllFromLine(id : Long) : Seq[Vehicle] = {
     DB.withConnection { implicit connection =>
       SQL(Vehicle.query+" WHERE line_id = {line_id}").on("line_id" -> id).as(Vehicle.tuple *)

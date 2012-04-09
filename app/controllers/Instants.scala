@@ -10,8 +10,14 @@ import models._
 object Instants extends Controller {
 	
   def all() = Action {
-    val lines = Line.findAll()
-    val json = Json.generate(lines)
+    val instants = Instant.findAll()
+    val json = Json.generate(instants)
+    Ok(json).as("application/json")
+  }
+  
+  def last() = Action {
+    val instants = Instant.findAllLastMinute()
+    val json = Json.generate(instants)
     Ok(json).as("application/json")
   }
 }
