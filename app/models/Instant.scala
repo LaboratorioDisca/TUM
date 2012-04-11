@@ -13,9 +13,11 @@ import play.api.Logger
 import scala.collection.mutable.HashMap
 import java.util.TimeZone
 import java.util.GregorianCalendar
+import anorm.NotAssigned
+
 
 case class Instant(
-    id : Long, 
+    id : Pk[Long], 
     speed : Double, 
     isOld : Boolean, 
     hasHighestQuality : Boolean, 
@@ -27,7 +29,19 @@ object Instant {
   
   val timeZone = TimeZone.getTimeZone("Mexico_City")
   val query = "SELECT id, speed, is_old, has_highest_quality, vehicle_id, created_at, ST_AsText(coordinates) AS coordinates FROM instants"
-
+  val tuple = {
+    get[Pk[Long]]("id") ~
+    get[Double]("speed") ~ 
+    get[Boolean]("is_old") ~
+    get[Boolean]("has_highest_quality") ~
+    get[Long]("vehicle_id") ~
+    get[Date]("created_at") ~
+    get[String]("coordinates") map {
+      case id~speed~isOld~hasHighestQuality~vehicleId~createdAt~coordinate => 
+        Instant(id, speed, isOld, hasHighestQuality, vehicleId, createdAt, parseCoordinateString(coordinate))
+    }
+  }
+    
   def findAll() : Seq[Instant] = {
     DB.withConnection { implicit connection =>
       SQL(Instant.query).as(Instant.tuple *)
@@ -40,40 +54,52 @@ object Instant {
     }
   }
   
-  def findAllLastMinute() : Seq[Instant] = {
+  def findAllRecent() : Seq[Instant] = {
     DB.withConnection { implicit connection =>
-      SQL(Instant.query+ "WHERE created_at <= {recent}").on("recent" -> this.getTimeBeforeGivenMinutes(1)).as(Instant.tuple *)
+      SQL(Instant.query+ " WHERE is_old = 'f' ORDER BY created_at DESC LIMIT 10").as(Instant.tuple *)
     }
   }
   
-  
-  val tuple = {
-    get[Long]("id") ~
-    get[Double]("speed") ~ 
-    get[Boolean]("is_old") ~
-    get[Boolean]("has_highest_quality") ~
-    get[Long]("vehicle_id") ~
-    get[Date]("created_at") ~
-    get[String]("coordinates") map {
-      case id~speed~isOld~hasHighestQuality~vehicleId~createdAt~coordinate => 
-        Instant(id, speed, isOld, hasHighestQuality, vehicleId, createdAt, parseCoordinateString(coordinate))
+  def create(instant: Instant): Unit = {
+    DB.withConnection { implicit connection =>
+      SQL("insert into instants(speed, is_old, has_highest_quality, vehicle_id, created_at, coordinates) " +
+      		"values ({speed}, {age}, {quality}, {vehicleId}, {date}, ST_SetSRID(ST_MakePoint({lon}, {lat}), 4326))").on(
+        'speed -> instant.speed,
+        'age -> instant.isOld,
+        'quality -> instant.hasHighestQuality,
+        'vehicleId -> instant.vehicleId,
+        'date -> instant.createdAt,
+        'lat -> instant.coordinate("lat"),
+        'lon -> instant.coordinate("lon")
+      ).executeUpdate()
     }
   }
   
-  def insertNew(vehicleData : HashMap[String, String]) {
-    if(vehicleData("vehicleId").isEmpty() || vehicleData("age").isEmpty() || vehicleData("quality").isEmpty())
-      return
+  def insertNew(vehicleData : HashMap[String, Any]) {
     
-	var vehicle = Vehicle.findByIdentifier(vehicleData("vehicleId").toLong)
+	var vehicle = Vehicle.findByIdentifier(vehicleData("vehicleId").asInstanceOf[String].toLong)
 	if(vehicle == null)
 	  return
 
-	val latitude = vehicleData("latitude") 
-	val longitude = vehicleData("longitude") 	
-	val date = getDateFromSeconds(vehicleData("seconds").toInt)
+	val latitude = vehicleData("latitude").asInstanceOf[Double] 
+	val longitude = vehicleData("longitude").asInstanceOf[Double]	
+	val date = getDateFromParams(vehicleData("date").asInstanceOf[HashMap[String, Int]])
 	val dateFormat = DateFormat.getDateTimeInstance()
-	Logger.info("Attempting to save instant with date: " + dateFormat.format(date) + " with lon/lat: " + longitude + ","+ latitude)
+
+	var coordinates = Map[String, Double]()
+	coordinates += ("lat" -> latitude, "lon" -> longitude)
+	
+	val instant = Instant(NotAssigned, 
+	    vehicleData("speed").asInstanceOf[Double],
+	    !vehicleData("age").asInstanceOf[Boolean],
+	    vehicleData("quality").asInstanceOf[Boolean],
+	    vehicle.id, date, coordinates)
+    this.create(instant)
+    
+    Logger.info("New instant recorded with date: "+ dateFormat.format(date))
   }
+  
+  
   
   def parseCoordinateString(coordinate : String) : Map[String, Double] = {
     val geom = new com.vividsolutions.jts.io.WKTReader().read(coordinate)
@@ -90,23 +116,16 @@ object Instant {
     return current.getTime()
   }
   
-  def getDateFromSeconds(seconds : Int) : Date = {
-    Logger.info("Time in seconds: " + seconds)
+  def getDateFromParams(params : HashMap[String, Int]) : Date = {
+    val seconds = params("seconds")
     
-    var hours = scala.math.floor(seconds/3600);
-   
+    var hours = scala.math.floor(seconds/3600);   
 	val divMinutes = seconds % 3600;
 	var minutes = scala.math.floor(divMinutes / 60);
- 
 	var divSeconds = divMinutes % 60;
     
 	var calendar : Calendar = new GregorianCalendar(timeZone)
-	Logger.info("Time current: " + calendar.getTimeInMillis()/1000)
-	calendar.setTimeInMillis(seconds*1000)
-	calendar.set(Calendar.HOUR, hours.toInt)
-	calendar.set(Calendar.MINUTE, minutes.toInt)
-	calendar.set(Calendar.SECOND, scala.math.ceil(divSeconds).toInt)
-	
+	calendar.set(calendar.get(Calendar.YEAR), params("month"), params("day"), hours.toInt, minutes.toInt, scala.math.ceil(divSeconds).toInt)
 	return calendar.getTime()
   }
   

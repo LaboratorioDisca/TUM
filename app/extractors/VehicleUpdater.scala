@@ -14,7 +14,7 @@ object VehicleUpdater {
     parsed
   }
   
-  def catchNextReport() : HashMap[String, String] = {
+  def catchNextReport() : HashMap[String, Any] = {
     val receivedPacket = new DatagramPacket(buffer, buffer.length)
     
     try{
@@ -38,13 +38,17 @@ object VehicleUpdater {
         /** Bit indexes for reconstructing components **/
         val vehicleIdG = List(3,4,5,6,7,8)
         val vehicleId = vehicleIdG.foldLeft(new String)((accum,n) => accum + byteStore(n))
-
-        val dayG = List(9,10)
-        val day = dayG.foldLeft(new String)((accum,n) => accum + byteStore(n))
+        
+        // Month and day values
+        val monthDayG = List(9,10)
+        val monthDay = monthDayG.foldLeft(new String)((accum,n) => accum + byteStore(n))
+        val day = monthDay.substring(0,2).toInt
+        val month = monthDay.substring(3,4).toInt
+        
         // to have chopped it's last character of last bit
-        val timeG = List(11,12,13)
-        var time = timeG.foldLeft(new String)((accum,n) => accum + byteStore(n))
-        time = time.dropRight(1)
+        val secondsG = List(11,12,13)
+        var seconds = secondsG.foldLeft(new String)((accum,n) => accum + byteStore(n))
+        seconds = seconds.dropRight(1)
         
         // [both] to have chopped it's first character of it's  
         // first bit and the last character of it's last bit
@@ -58,10 +62,11 @@ object VehicleUpdater {
         }
 
         var speedH = decompositionGroup1.drop(2)
-
-        var quality = decompositionGroup1.dropRight(3)
+        		
+        // TODO: Check correctness
+        var quality = decompositionGroup1.dropRight(3) == "1"
         var speed = speedH+byteStore(20)
-        var age = decompositionGroup1.dropRight(2).drop(1)
+        var age = decompositionGroup1.dropRight(2).drop(1) == "1"
         
         // to have chopped it's last character
         // var decompositionGroup2 = 21
@@ -71,18 +76,22 @@ object VehicleUpdater {
         
         // to have chopped it's first character
         //var decompositionGroup3 = Integer.toString(Integer.parseInt(byteStore(22).drop(1), 16), 2)       
-
-        val record = HashMap.empty[String, String]
+        
+        val date = new HashMap[String,Int]()
+        date += ("month" -> month, "day" -> day, "seconds" -> seconds.toInt)
+        
+        val record = HashMap.empty[String, Any]
         record += ("vehicleId" -> vehicleId)
-        record += ("latitude" -> latitude)
-        record += ("longitude" -> longitude)
+        record += ("latitude" -> latitude.toDouble)
+        record += ("longitude" -> longitude.toDouble)
         record += ("quality" -> quality)
         record += ("age" -> age)
-        record += ("speed" -> speed)
-        record += ("seconds" -> time)
+        record += ("speed" -> speed.toDouble)
+        record += ("date" -> date)
+        record += ("seconds" -> date)
         record
     }catch{
-    	case e:SocketTimeoutException => return HashMap.empty[String, String]
+    	case e:SocketTimeoutException => return HashMap.empty[String, Any]
     }
   }
 }
