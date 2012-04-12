@@ -20,4 +20,10 @@ object Instants extends Controller {
     val json = Json.generate(instants)
     Ok(json).as("application/json")
   }
+  
+  def aMinuteAgo() = Action {
+    val instants = Instant.findAllInLastMinute()
+    val json = Json.generate(instants)
+    Ok(json).as("application/json")
+  }
 }

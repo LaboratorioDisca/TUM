@@ -29,6 +29,7 @@ object Instant {
   
   val timeZone = TimeZone.getTimeZone("Mexico_City")
   val query = "SELECT id, speed, is_old, has_highest_quality, vehicle_id, created_at, ST_AsText(coordinates) AS coordinates FROM instants"
+
   val tuple = {
     get[Pk[Long]]("id") ~
     get[Double]("speed") ~ 
@@ -56,8 +57,14 @@ object Instant {
   
   def findAllRecent() : Seq[Instant] = {
     DB.withConnection { implicit connection =>
-      SQL(Instant.query+ " WHERE is_old = 'f' ORDER BY created_at DESC LIMIT 10").as(Instant.tuple *)
+      SQL(Instant.query + " WHERE is_old = 'f' ORDER BY created_at DESC LIMIT 10 ").as(Instant.tuple *)
     }
+  }
+
+  def findAllInLastMinute() : Seq[Instant] = {
+    DB.withConnection { implicit connection =>
+      SQL(Instant.query + " WHERE created_at <= {created_at}").on("created_at" -> this.getTimeBeforeGivenMinutes(1)).as(Instant.tuple *)
+    }  
   }
   
   def create(instant: Instant): Unit = {
