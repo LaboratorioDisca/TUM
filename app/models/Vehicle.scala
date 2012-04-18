@@ -5,7 +5,7 @@ import play.api.Play.current
 import anorm._
 import anorm.SqlParser._
 
-case class Vehicle(id : Long, identifier : Long, line_id : Long)
+case class Vehicle(id : Long, identifier : Long, lineId : Long)
 
 object Vehicle {
   
@@ -35,7 +35,7 @@ object Vehicle {
   
   def findAllFromLine(id : Long) : Seq[Vehicle] = {
     DB.withConnection { implicit connection =>
-      SQL(Vehicle.query+" WHERE line_id = {line_id}").on("line_id" -> id).as(Vehicle.tuple *)
+      SQL(Vehicle.query+" WHERE line_id = {lineId}").on("lineId" -> id).as(Vehicle.tuple *)
     }
   }
   

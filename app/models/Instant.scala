@@ -29,7 +29,7 @@ object Instant {
   
   val timeZone = TimeZone.getTimeZone("Mexico_City")
   val query = "SELECT id, speed, is_old, has_highest_quality, vehicle_id, created_at, ST_AsText(coordinates) AS coordinates FROM instants"
-
+  val queryUniques = "SELECT DISTINCT ON (vehicle_id) id, speed, is_old, has_highest_quality, vehicle_id, created_at, ST_AsText(coordinates) AS coordinates FROM instants";
   val tuple = {
     get[Pk[Long]]("id") ~
     get[Double]("speed") ~ 
@@ -57,13 +57,14 @@ object Instant {
   
   def findAllRecent() : Seq[Instant] = {
     DB.withConnection { implicit connection =>
-      SQL(Instant.query + " WHERE is_old = 'f' ORDER BY created_at DESC LIMIT 10 ").as(Instant.tuple *)
+      SQL(Instant.queryUniques + " WHERE is_old = 'f' ORDER BY vehicle_id, created_at DESC").as(Instant.tuple *)
     }
   }
 
   def findAllInLastMinute() : Seq[Instant] = {
+    val date = this.getTimeBeforeGivenMinutes(1)
     DB.withConnection { implicit connection =>
-      SQL(Instant.query + " WHERE created_at <= {created_at}").on("created_at" -> this.getTimeBeforeGivenMinutes(1)).as(Instant.tuple *)
+      SQL(Instant.query + " WHERE created_at <= {created_at}").on("created_at" -> date).as(Instant.tuple *)
     }  
   }
   
@@ -118,9 +119,9 @@ object Instant {
   }
   
   def getTimeBeforeGivenMinutes(minutes : Int) : Date = {
-    val current : Calendar = Calendar.getInstance()
-    current.set(Calendar.MINUTE, current.get(Calendar.MINUTE)-minutes)
-    return current.getTime()
+    var calendar : Calendar = new GregorianCalendar(timeZone)
+    calendar.roll(Calendar.MINUTE, calendar.get(Calendar.MINUTE)-minutes)
+    return calendar.getTime()
   }
   
   def getDateFromParams(params : HashMap[String, Int]) : Date = {
