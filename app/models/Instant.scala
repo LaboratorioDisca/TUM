@@ -133,7 +133,9 @@ object Instant {
 	var divSeconds = divMinutes % 60;
     
 	var calendar : Calendar = new GregorianCalendar(timeZone)
-	calendar.set(calendar.get(Calendar.YEAR), params("month"), params("day"), hours.toInt, minutes.toInt, scala.math.ceil(divSeconds).toInt)
+	// For java, january is 0
+	var month = params("month")-1
+	calendar.set(calendar.get(Calendar.YEAR), month, params("day"), hours.toInt, minutes.toInt, scala.math.ceil(divSeconds).toInt)
 	return calendar.getTime()
   }
   
