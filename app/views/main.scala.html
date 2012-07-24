@@ -1,5 +1,4 @@
-@(title: String)(content: Html)
-
+@(title: String)(body_class: String)(content: Html)
 <!DOCTYPE html>
 
 <html>
@@ -14,14 +13,7 @@
         <script src="@routes.Assets.at("javascripts/wax.g.min.js")" type="text/javascript"></script>
         <script src="@routes.Assets.at("javascripts/main.js")" type="text/javascript"></script>
     </head>
-    <body>
-    	<div id="map" style="padding: 0pt; overflow: hidden; cursor: default;"></div>
-    	<div id="menu">
-    		<ul>
-    			<li class="titulo">UNAM::IIMAS</li>
-    			<li class="proyecto">Pumabus en Tiempo Real</li>
-    		</ul>
-    	</div>
+    <body class="@body_class">
         @content
     </body>
 </html>

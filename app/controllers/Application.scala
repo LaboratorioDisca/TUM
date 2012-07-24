@@ -10,7 +10,12 @@ import models._
 object Application extends Controller {
   
   def index = Action {
-    Ok(views.html.index())
+    Ok(views.html.application.index())
   }
+
+	def extend = Action {
+		Ok(views.html.application.extend())
+	}
+
   
 }
