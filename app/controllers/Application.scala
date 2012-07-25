@@ -13,9 +13,12 @@ object Application extends Controller {
     Ok(views.html.application.index())
   }
 
-	def extend = Action {
-		Ok(views.html.application.extend())
+	def contribute = Action {
+		Ok(views.html.application.contribute())
 	}
 
+	def map = Action {
+		Ok(views.html.application.map())
+	}
   
 }
