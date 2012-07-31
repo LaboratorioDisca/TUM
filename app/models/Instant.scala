@@ -30,6 +30,7 @@ object Instant {
   val timeZone = TimeZone.getTimeZone("Mexico_City")
   val query = "SELECT id, speed, is_old, has_highest_quality, vehicle_id, created_at, ST_AsText(coordinates) AS coordinates FROM instants"
   val queryUniques = "SELECT DISTINCT ON (vehicle_id) id, speed, is_old, has_highest_quality, vehicle_id, created_at, ST_AsText(coordinates) AS coordinates FROM instants";
+
   val tuple = {
     get[Pk[Long]]("id") ~
     get[Double]("speed") ~ 
@@ -62,10 +63,24 @@ object Instant {
   }
 
   def findAllInLastMinute() : Seq[Instant] = {
-    val date = this.getTimeBeforeGivenMinutes(1)
+    this.findAllInLastMinutes(5)
+  }
+  
+  def findAllInLastMinutes(min : Int) : Seq[Instant] = {
+    val date : java.sql.Date = new java.sql.Date(this.getTimeBeforeGivenMinutes(min).getTime())
     DB.withConnection { implicit connection =>
-      SQL(Instant.query + " WHERE created_at <= {created_at}").on("created_at" -> date).as(Instant.tuple *)
+      SQL(Instant.queryUniques + " WHERE created_at >= {created_at} AND is_old = 'f' ORDER BY vehicle_id, created_at DESC").on("created_at" -> date).as(Instant.tuple *)
     }  
+  }
+  
+  def serviceStatus() : Int = {
+    val date : java.sql.Date = new java.sql.Date(this.getTimeBeforeGivenMinutes(1).getTime())
+    val dateFormat = DateFormat.getDateTimeInstance()
+
+    DB.withConnection { implicit connection =>
+      var query = "SELECT DISTINCT ON (vehicles.line_id) vehicles.line_id, instants.id, speed, is_old, has_highest_quality, vehicle_id, instants.created_at, ST_AsText(coordinates) AS coordinates FROM instants INNER JOIN vehicles ON (vehicles.id = instants.vehicle_id)"
+      SQL(query + " WHERE instants.created_at >= {created_at} AND is_old = 'f'").on("created_at" -> date).as(Instant.tuple *).size
+    }
   }
   
   def create(instant: Instant): Unit = {
@@ -120,7 +135,7 @@ object Instant {
   
   def getTimeBeforeGivenMinutes(minutes : Int) : Date = {
     var calendar : Calendar = new GregorianCalendar(timeZone)
-    calendar.roll(Calendar.MINUTE, calendar.get(Calendar.MINUTE)-minutes)
+    calendar.roll(Calendar.MINUTE, -minutes)
     return calendar.getTime()
   }
   
