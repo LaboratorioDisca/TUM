@@ -9,7 +9,8 @@ $(document).ready(function() {
 					center: latlng,
 					maxZoom: 20,
 					minZoom: 14,
-					mapTypeId: google.maps.MapTypeId.HYBRID
+					mapTypeId: google.maps.MapTypeId.HYBRID,
+					mapTypeControl: false
 				});
 
 	  // Use this code to set a new layer as a baselayer -

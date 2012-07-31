@@ -3,7 +3,9 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index
+GET     /                           			controllers.Application.index
+GET			/contribute												controllers.Application.contribute
+GET			/map															controllers.Application.map
 
 # Transports
 
