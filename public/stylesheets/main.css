@@ -1,6 +1,10 @@
 @import url(http://fonts.googleapis.com/css?family=Open+Sans:400,700);
 
-body, html { font-family: 'Open Sans', sans-serif; }
+body, html { 
+	font-family: 'Open Sans', sans-serif;
+	margin: 0;
+	padding: 0;
+}
 
 #map {
   position:absolute;
@@ -13,25 +17,20 @@ body, html { font-family: 'Open Sans', sans-serif; }
   z-index:0;
 }
 
-/*
+
 #menu {
+	position:absolute;
 	height: 40px;
-	width: 280px;
-	position: fixed;
-	top: 0px;
-	right: 50%;
-	margin-right: -140px;
-	background-color: black;
+	width: 350px;
+	top: 10px;
+	right: 20px;
+	background-color: #112838;
 	
-	-moz-box-shadow: 1px 1px 5px #888;
-	-webkit-box-shadow: 1px 1px 5px #888;
-	box-shadow: 1px 1px 5px #888;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
 	
-	-moz-border-bottom-right-radius: 10px;
-	border-bottom-right-radius: 10px;
-	
-	-moz-border-bottom-left-radius: 10px;
-	border-bottom-left-radius: 10px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
 }
 
 #menu ul {
@@ -42,7 +41,6 @@ body, html { font-family: 'Open Sans', sans-serif; }
 
 #menu ul li {
 	display: inline-block;
-	
 }
 
 #menu a:hover {
@@ -68,7 +66,13 @@ body, html { font-family: 'Open Sans', sans-serif; }
 	border-right: 1px solid #464646;
 	padding-right: 25px;
 }
-*/
+
+.stylized-menu {
+	position:fixed !important;
+	-moz-box-shadow: 1px 1px 5px #888;
+	-webkit-box-shadow: 1px 1px 5px #888;
+	box-shadow: 1px 1px 5px #888;
+}
 
 .no-map {
 	height: 100%;
@@ -84,49 +88,13 @@ body, html { font-family: 'Open Sans', sans-serif; }
 	margin: 30px auto 0px auto;
 }
 
-.boxed {
-	background-image: url('../images/white_boxes.png') ;
-}
-
-#menu {
-	height: 60px;
-	width: 100%;
+#decoration {
 	position: fixed;
 	top: 0px;
 	left: 0px;
-	background-color: #0D1536;
-	
-	
-	-moz-box-shadow: 1px 1px 5px #888;
-	-webkit-box-shadow: 1px 1px 5px #888;
-	box-shadow: 1px 1px 5px #888;
-}
-
-#menu .decoration {
 	height: 2px;
 	width: 100%;
 	background-color: #916306;
-}
-
-#menu ul {
-	list-style-type: none;
-}
-
-#menu ul li {
-	margin-right: 30px;
-	display: inline-block;
-	float: right;
-}
-
-#menu ul li a {
-	font-family: 'Open Sans';
-	color: white;
-	text-decoration: none;
-	font-size: 15px;
-}
-
-#menu ul li a:hover {
-	color: #996000;
 }
 
 #moto {
@@ -136,19 +104,49 @@ body, html { font-family: 'Open Sans', sans-serif; }
 	font-weight: bold;
 }
 
-h1 {
+#logo {
+	position: absolute;
+	width: 350px;
+	height: 280px;
+	background-image: url('../images/logo.png') ;
+}
+
+#main-block {
+	width: 100%;
+	height: 500px;
+	background-color: #0E212E;
+}
+
+#content-block {
+	width: 100%;
+	height: 300px;
+}
+
+#footer-block {
+	width: 100%;
+	height: 60px;
+	background-color: #0E212E;
+	color: white;
+	font-size: 11px;
+}
+
+#footer-block ul {
+	list-style: none;
+	padding: 6px 20px;
+	margin: 0px;
 	text-align: center;
-	font-size: 20px;
-	margin: 20% auto 0px auto;
-	width: 40%;
+	padding-top: 20px;
 }
 
-h1 .question {
-	color: #A76900;
+#footer-block ul li {
+	display: inline-block;
 }
 
-h1 .answer {
-	margin-top: -20px;
-	color: #3E3F3F;
-	font-size: 20px;
+#footer-block ul li.apart {
+	margin-right: 15px;
+}
+
+#footer-block ul li a {
+	color: #EDD489;
+	font-weight: bold
 }
