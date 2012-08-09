@@ -30,7 +30,8 @@ object Instant {
   val timeZone = TimeZone.getTimeZone("Mexico_City")
   val query = "SELECT id, speed, is_old, has_highest_quality, vehicle_id, created_at, ST_AsText(coordinates) AS coordinates FROM instants"
   val queryUniques = "SELECT DISTINCT ON (vehicle_id) id, speed, is_old, has_highest_quality, vehicle_id, created_at, ST_AsText(coordinates) AS coordinates FROM instants";
-
+  val dateFormat = DateFormat.getDateTimeInstance()
+  
   val tuple = {
     get[Pk[Long]]("id") ~
     get[Double]("speed") ~ 
@@ -63,7 +64,7 @@ object Instant {
   }
 
   def findAllInLastMinute() : Seq[Instant] = {
-    this.findAllInLastMinutes(5)
+    this.findAllInLastMinutes(1)
   }
   
   def findAllInLastMinutes(min : Int) : Seq[Instant] = {
@@ -107,7 +108,6 @@ object Instant {
 	val latitude = vehicleData("latitude").asInstanceOf[Double] 
 	val longitude = vehicleData("longitude").asInstanceOf[Double]	
 	val date = getDateFromParams(vehicleData("date").asInstanceOf[HashMap[String, Int]])
-	val dateFormat = DateFormat.getDateTimeInstance()
 
 	var coordinates = Map[String, Double]()
 	coordinates += ("lat" -> latitude, "lon" -> longitude)
@@ -135,7 +135,9 @@ object Instant {
   
   def getTimeBeforeGivenMinutes(minutes : Int) : Date = {
     var calendar : Calendar = new GregorianCalendar(timeZone)
-    calendar.roll(Calendar.MINUTE, -minutes)
+    calendar.add(Calendar.MINUTE, -minutes)
+    Logger.info("==================================================> Searching instants ocurring since: "+ dateFormat.format(calendar.getTime()))
+
     return calendar.getTime()
   }
   

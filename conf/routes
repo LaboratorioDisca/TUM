@@ -31,7 +31,7 @@ GET 	/vehicles/:id				controllers.Vehicles.one(id : Long)
 
 # Instants
 
-GET 	/instants/recent			controllers.Instants.aMinuteAgo
+GET 	/instants/recent			controllers.Instants.recent
 GET 	/instants/lastminute		controllers.Instants.aMinuteAgo
 GET 	/instants/minutesago/:min	controllers.Instants.minutesAgo(min : Int)
 
