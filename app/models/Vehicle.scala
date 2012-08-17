@@ -5,7 +5,7 @@ import play.api.Play.current
 import anorm._
 import anorm.SqlParser._
 
-case class Vehicle(id : Long, identifier : Long, lineId : Long)
+case class Vehicle(id : Long, identifier : Long, lineId : Long, publicNumber : Int)
 
 object Vehicle {
   
@@ -28,8 +28,7 @@ object Vehicle {
     	return vehicle.head
       } else {
         return null
-      }
-    	    
+      }    
     }
   }
   
@@ -39,13 +38,14 @@ object Vehicle {
     }
   }
   
-  val query = "SELECT id, identifier, line_id FROM vehicles"
+  val query = "SELECT id, identifier, line_id, public_number FROM vehicles"
   val tuple = {
     get[Long]("id") ~
     get[Long]("identifier")~
-    get[Long]("line_id") map {
-      case id~identifier~lineId => 
-        Vehicle(id, identifier, lineId)
+    get[Long]("line_id")~
+    get[Int]("public_number") map {
+      case id~identifier~lineId~publicNumber => 
+        Vehicle(id, identifier, lineId, publicNumber)
     }
   }
 }
