@@ -85,7 +85,7 @@ object Instant {
   }
   
   def create(instant: Instant): Unit = {
-    DB.withConnection { implicit connection =>
+    DB.withTransaction { implicit connection =>
       SQL("insert into instants(speed, is_old, has_highest_quality, vehicle_id, created_at, coordinates) " +
       		"values ({speed}, {age}, {quality}, {vehicleId}, {date}, ST_SetSRID(ST_MakePoint({lon}, {lat}), 4326))").on(
         'speed -> instant.speed,
@@ -136,7 +136,7 @@ object Instant {
   def getTimeBeforeGivenMinutes(minutes : Int) : Date = {
     var calendar : Calendar = new GregorianCalendar(timeZone)
     calendar.add(Calendar.MINUTE, -minutes)
-    Logger.info("==================================================> Searching instants ocurring since: "+ dateFormat.format(calendar.getTime()))
+    //Logger.info("========================================> Searching instants ocurring since: "+ dateFormat.format(calendar.getTime()))
 
     return calendar.getTime()
   }

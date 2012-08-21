@@ -12,7 +12,7 @@ object Lines extends Controller {
   def all() = Action {
     val lines = Line.findAll()
     val json = Json.generate(lines)
-    Ok(json).as("application/json")
+    Ok(json).as("application/json").withHeaders(("Accept-Charset","utf-8"))
   }
   
   def one(id: Long) = Action {
