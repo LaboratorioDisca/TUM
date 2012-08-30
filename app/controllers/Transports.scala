@@ -9,22 +9,33 @@ import models._
 
 object Transports extends Controller {
   
-  def all = Action {
+  def all = Action(parse.raw) { request =>
     val transports = Transport.findAll()
     val json = Json.generate(transports)
-    Ok(json).as("application/json")
+    
+    generateResponseForRequest(request, json)
   }
   
-  def one(id : Long) = Action {
+  def one(id : Long) = Action(parse.raw) { request =>
     val transport = Transport.find(id)
     val json = Json.generate(transport)
-    Ok(json).as("application/json")
+    
+    generateResponseForRequest(request, json)
   }
   
-  def linesForTransportWithId(id : Long) = Action {
+  def linesForTransportWithId(id : Long) = Action(parse.raw) { request =>
     val lines = Line.findAllFromTransport(id)
     val json = Json.generate(lines)
-    Ok(json).as("application/json")
+    
+    generateResponseForRequest(request, json)
+  }
+  
+  def generateResponseForRequest(request : Request[RawBuffer], json : String) = {
+    if(request.queryString.contains("callback")) {
+      Ok(request.queryString.get("callback").get.head + "(" + json + ")").as("text/javascript")
+    } else {
+      Ok(json).as("application/json")
+    }
   }
   
 }

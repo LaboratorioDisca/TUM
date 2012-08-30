@@ -12,23 +12,47 @@ import models._
 
 object Vehicles extends Controller {
 
-  def all = Action {
+  def all = Action(parse.raw) { request =>
     val vehicles = Vehicle.findAll()
     val json = Json.generate(vehicles)
-    Ok(json).as("application/json")
+    
+    generateResponseForRequest(request, json)
   }
   
-  def one(id : Long) = Action {
+  def one(id : Long) = Action(parse.raw) { request =>
     val vehicle = Vehicle.find(id)
     val json = Json.generate(vehicle)
-    Ok(json).as("application/json")
+    
+    generateResponseForRequest(request, json)
   }
   
-  def allFromLineWithId(id : Long) = Action {
+  def allFromLineWithId(id : Long) = Action(parse.raw) { request =>
     val vehicles : Promise[Seq[Vehicle]] = Akka.future { Vehicle.findAllFromLine(id) }
     
-    Async {
-      vehicles.map(sequence => Ok(Json.generate(sequence)).as("application/json"))
+    generateResponseForRequest(request, vehicles)
+  }
+
+  def generateResponseForRequest(request : Request[RawBuffer], json : String) = {
+    if(request.queryString.contains("callback")) {
+      Ok(request.queryString.get("callback").get.head + "(" + json + ")").as("text/javascript")
+    } else {
+      Ok(json).as("application/json")
     }
+  }
+  
+  def generateResponseForRequest(request : Request[RawBuffer], promise : Promise[Any]) = {
+    if(request.queryString.contains("callback")) {
+      this.jsonPResponseForPromise(promise, request.queryString.get("callback").get.head)
+    } else {
+      this.responseForPromise(promise)
+    }
+  }
+  
+  def responseForPromise(promise : Promise[Any]) = Async {
+    promise.map(response => Ok(Json.generate(response)).as("application/json"))
+  }
+  
+  def jsonPResponseForPromise(promise : Promise[Any], callback : String) = Async {
+    promise.map(response => Ok(callback + "(" + Json.generate(response) + ")").as("text/javascript"))
   }
 }
