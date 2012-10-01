@@ -108,7 +108,7 @@ object Instant {
 	val latitude = vehicleData("latitude").asInstanceOf[Double] 
 	val longitude = vehicleData("longitude").asInstanceOf[Double]	
 	val date = getDateFromParams(vehicleData("date").asInstanceOf[HashMap[String, Int]])
-
+	
 	var coordinates = Map[String, Double]()
 	coordinates += ("lat" -> latitude, "lon" -> longitude)
 	
@@ -136,7 +136,7 @@ object Instant {
   def getTimeBeforeGivenMinutes(minutes : Int) : Date = {
     var calendar : Calendar = new GregorianCalendar(timeZone)
     calendar.add(Calendar.MINUTE, -minutes)
-    Logger.info("========================================> Searching instants ocurring since: "+ dateFormat.format(calendar.getTime()))
+    Logger.info("====================> Searching instants ocurring since: "+ dateFormat.format(calendar.getTime()))
 
     return calendar.getTime()
   }

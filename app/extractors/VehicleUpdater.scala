@@ -1,6 +1,7 @@
 package extractors
 import java.net.{DatagramPacket, InetAddress, MulticastSocket, SocketTimeoutException}
 import scala.collection.mutable.HashMap
+import play.api._
 
 object VehicleUpdater {
   private val socket = new MulticastSocket(6005) 
@@ -43,7 +44,7 @@ object VehicleUpdater {
         val monthDayG = List(9,10)
         val monthDay = monthDayG.foldLeft(new String)((accum,n) => accum + byteStore(n))
         val day = monthDay.substring(0,2).toInt
-        val month = monthDay.substring(3,4).toInt
+        val month = monthDay.substring(2,4).toInt
         
         // to have chopped it's last character of last bit
         val secondsG = List(11,12,13)
@@ -75,11 +76,11 @@ object VehicleUpdater {
         // var direction = List(21,22)
         
         // to have chopped it's first character
-        //var decompositionGroup3 = Integer.toString(Integer.parseInt(byteStore(22).drop(1), 16), 2)       
-        
+        //var decompositionGroup3 = Integer.toString(Integer.parseInt(byteStore(22).drop(1), 16), 2)
+
         val date = new HashMap[String,Int]()
         date += ("month" -> month, "day" -> day, "seconds" -> seconds.toInt)
-        
+
         val record = HashMap.empty[String, Any]
         record += ("vehicleId" -> vehicleId)
         record += ("latitude" -> latitude.toDouble)
